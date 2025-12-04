@@ -1,6 +1,12 @@
 <?php
 	$data = file_exists("data.json") ? json_decode(file_get_contents("data.json"), true) : array();
 	
+	exec("pidof vbit2", $vbit2Pids);
+	exec("pidof omxplayer.bin", $omxplayerPids);
+	
+	if (count($vbit2Pids) == 0) $data["runningService"] = "";
+	if (count($omxplayerPids) == 0) $data["runningVideoStream"] = ""; $data["runningVideoStreamUrl"] = "";
+	
 	exec("ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'", $hostIP);
 ?>
 <!DOCTYPE html>
@@ -79,11 +85,12 @@
 			function onSaveDataClick() {
 				var username = $("input#username").val();
 				var localServicesFolder = $("input#localServicesFolder").val();
+				var tvHeadendUrl = $("input#tvHeadendUrl").val();
 				
 				$.ajax({
 					method: "POST",
 					url: "save_data.php",
-					data: { username: username, localServicesFolder: localServicesFolder },
+					data: { username: username, localServicesFolder: localServicesFolder, tvHeadendUrl: tvHeadendUrl },
 					success: function() { window.location.reload(); }
 				});
 			}
@@ -110,6 +117,38 @@
 				});
 			}
 			
+			function onVideoStreamSwitchClick(buttonElement, runningVideoStream, runningVideoStreamUrl) {
+				buttonElement.outerHTML = '<button type="button" class="btn btn-primary" disabled><i class="bi bi-play-fill"></i> Starting video stream...</button>';
+				
+				$.ajax({
+					method: "POST",
+					url: "switch_video_stream.php",
+					data: { runningVideoStream: decodeURIComponent(runningVideoStream), runningVideoStreamUrl: decodeURIComponent(runningVideoStreamUrl) }
+				});
+				
+				setTimeout(function() { window.location.reload(); }, 2000);
+			}
+			
+			function onStopVideoStreamClick(buttonElement) {
+				buttonElement.outerHTML = '<button type="button" class="btn btn-danger" style="margin-left: 18px;" disabled><i class="bi bi-stop-fill"></i> Stopping video stream...</button>';
+				
+				$.ajax({
+					method: "POST",
+					url: "stop_video_stream.php",
+					success: function() { window.location.reload(); }
+				});
+			}
+			
+			function onRefreshChannelsClick() {
+				buttonElement.outerHTML = '<button type="button" class="btn btn-primary" disabled><i class="bi bi-arrow-clockwise"></i> Refreshing channel list...</button>';
+				
+				$.ajax({
+					method: "GET",
+					url: "tvheadend_channels_to_json.php",
+					success: function() { window.location.reload(); }
+				});
+			}
+			
 			$(function() {
 				if (sessionStorage.hasOwnProperty("currentTab")) {
 					$("#" + sessionStorage.getItem('currentTab')).tab("show");
@@ -130,6 +169,9 @@
 				</li>
 				<li class="nav-item" role="presentation">
 					<button class="nav-link" id="container-local-services-tab-nav" data-bs-toggle="tab" data-bs-target="#container-local-services-tab-content" type="button" role="tab" aria-controls="container-local-services-tab-content" aria-selected="">Local services</button>
+				</li>
+				<li class="nav-item" role="presentation">
+					<button class="nav-link" id="container-video-streams-tab-nav" data-bs-toggle="tab" data-bs-target="#container-video-streams-tab-content" type="button" role="tab" aria-controls="container-video-streams-tab-content" aria-selected=""<?php echo (array_key_exists("tvHeadendUrl", $data) ? : ' style="display: none;"'); ?>>Video streams</button>
 				</li>
 				<li class="nav-item ms-auto" role="presentation">
 					<button class="nav-link" id="container-settings-tab-nav" data-bs-toggle="tab" data-bs-target="#container-settings-tab-content" type="button" role="tab" aria-controls="container-settings-tab-content" aria-selected=""><i class="bi bi-gear"></i> Settings</button>
@@ -213,19 +255,57 @@
 					</div>
 				</div>
 				
+				<div class="tab-pane fade" id="container-video-streams-tab-content" role="tabpanel" aria-labelledby="container-video-streams-tab-nav"<?php echo (array_key_exists("tvHeadendUrl", $data) ? : ' style="display: none;"'); ?>>
+					<div id="video-streams-page-container" class="container">
+						
+						<div class="row mb-3">
+							<button type="button" class="btn btn-primary" onclick="onRefreshChannelsClick();"><i class="bi bi-arrow-clockwise"></i> Refresh channel list</button>
+						</div>
+					
+						<div class="row header-row p-2">
+							<div class="col-8 align-self-center"><b>Service name</b></div>
+							<div class="col-4"><b>Switch to service</b></div>
+						</div>
+						
+						<?php
+							$videoStreams = file_exists("video_streams.json") ? json_decode(file_get_contents("video_streams.json"), true) : array();
+						
+							foreach ($videoStreams as $videoStream)
+							{
+								$runVideoStreamButtonString = ($videoStream["name"] == $data["runningVideoStream"])
+											? '<i class="bi bi-play-fill"></i> Running <button type="button" class="btn btn-danger" style="margin-left: 18px;" onclick="onStopVideoStreamClick(this);"><i class="bi bi-stop-fill"></i> Stop video stream</button>'
+											: '<button type="button" class="btn btn-primary" onclick="onVideoStreamSwitchClick(this, \'' . urlencode($videoStream["name"]) . '\', \'' . urlencode($videoStream["url"]) . '\');"><i class="bi bi-play-fill"></i> Start video stream</button>';
+										
+										echo <<<STR
+												<div class="row row-bordered p-2 align-items-center">
+													<div class="col-8">{$videoStream["name"]}</div>
+													<div class="col-4">{$runVideoStreamButtonString}</div>
+												</div>
+											STR;
+							}
+						?>
+					</div>
+				</div>
+				
 				<div class="tab-pane fade" id="container-settings-tab-content" role="tabpanel" aria-labelledby="container-settings-tab-nav">
 					<div id="settings-page-container" class="container">
 						<div class="row p-2 align-items-end">
-							<div class="col-4">
+							<div class="col-2">
 								<div class="form-group">
 									<label for="username">Username</label>
 									<input class="form-control" id="username" type="text" placeholder="pi" value="<?php if (array_key_exists("username", $data)) echo $data["username"]; ?>">
 								</div>
 							</div>
-							<div class="col-4">
+							<div class="col-3">
 								<div class="form-group">
 									<label for="localServicesFolder">Local services root folder</label>
 									<input class="form-control" id="localServicesFolder" type="text" placeholder="/" value="<?php if (array_key_exists("localServicesFolder", $data)) echo $data["localServicesFolder"]; ?>"></input>
+								</div>
+							</div>
+							<div class="col-3">
+								<div class="form-group">
+									<label for="tvHeadendUrl">TVHeadend URL</label>
+									<input class="form-control" id="tvHeadendUrl" type="text" placeholder="http://<IP or hostname>:9981/" value="<?php if (array_key_exists("tvHeadendUrl", $data)) echo $data["tvHeadendUrl"]; ?>"></input>
 								</div>
 							</div>
 							<div class="col-2">

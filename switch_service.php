@@ -32,7 +32,7 @@
 	{		
 		if (is_dir($installedServicesFolderUri . "/" . $data["runningService"] . "/.git"))
 		{
-			exec(' echo "*/5 * * * * ' . $data["username"] . ' git -C ' . $installedServicesFolderUri . '/' . $data["runningService"] . ' pull" | sudo tee /etc/cron.d/teletext-service-switcher');
+			exec(' echo "*/5 * * * * ' . $data["username"] . ' git -C ' . $installedServicesFolderUri . '/' . $data["runningService"] . ' pull --depth 120" | sudo tee /etc/cron.d/teletext-service-switcher');
 		}
 		else if (is_dir($installedServicesFolderUri . "/" . $data["runningService"] . "/.svn"))
 		{
