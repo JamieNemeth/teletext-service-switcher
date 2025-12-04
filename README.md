@@ -121,6 +121,30 @@ Once the correct username and root folder have been saved, you should see a list
 ![image](https://github.com/user-attachments/assets/6be0a7d9-d350-4759-82ae-e0812885548f)
 
 
+#### Play a TV channel alongside teletext
+
+This uses OMXPlayer to connect with a separate server running TVHeadend, to display TV channels at the same time as outputting teletext on your Raspberry Pi.
+
+Firstly, install OMXPlayer:
+```
+sudo apt-get install omxplayer
+
+```
+
+If you don't see it as an installable option, then your Raspberry Pi OS is too new. I'm using it on Raspbian Buster on a Raspberry Pi 1 Model B.
+
+- In the settings tab, enter the URL (IP/hostname and port) of your TVHeadend server (e.g. _http://tvheadend.local:9981_) and save. This will enable the 'Video streams' tab
+- Click on the 'Refresh channel list button'
+
+If the URL was entered correctly, and your channels are set up correctly in the TVHeadend EPG, the page will refresh after a few seconds and you should see a full list of channels to choose from.
+
+Clicking on 'Start video stream' should output the channel (after 10-20 seconds) on your TV, in an approximation of a 14:9 letterboxed aspect ratio. In future I may add further settings options to allow this to be changed, but it was the compromise I was happy with on a 4:3 CRT for displaying 16:9 source content without losing too much of the picture, and it's a nod to how I remember TV appearing for a significant duration of time on all of my 4:3 TVs during the transition to digital TV in the UK. The black bar at the bottom also cunningly hides the missing lines resulting from using VBIT2. (This is why, if you use this option without also running a teletext service, the resultant TV picture will appear too low in the frame.)
+
+<img width="1013" height="629" alt="image" src="https://github.com/user-attachments/assets/93809cba-05eb-436b-a358-e74c858f2496" />
+
+
+
+
 
 ## Set up a network file share (NFS) as your local service directory
 
@@ -202,3 +226,5 @@ If you've followed the folder structure above, i.e.
 then you should see a list of available services in the 'local services' tab.
 
 For example, I've stored my local services in *wdmycloudmirror:/nfs/Public/Teletext/Restorations/tti-teletext-restorations*, which means that they appear locally on the Pi mapped to */var/www/nfs/wdmycloudmirror/Teletext/Restorations/tti-teletext-restorations*, so this is the path I've used in 'local services root folder'.
+
+
