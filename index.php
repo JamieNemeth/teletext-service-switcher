@@ -104,7 +104,7 @@
 					data: { serviceType: serviceType, runningService: decodeURIComponent(runningService) }
 				});
 				
-				setTimeout(function() { window.location.reload(); }, 2000);
+				setTimeout(function() { window.location.reload(); }, 4000);
 			}
 			
 			function onStopOutputClick(buttonElement) {
