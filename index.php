@@ -139,7 +139,7 @@
 				});
 			}
 			
-			function onRefreshChannelsClick() {
+			function onRefreshChannelsClick(buttonElement) {
 				buttonElement.outerHTML = '<button type="button" class="btn btn-primary" disabled><i class="bi bi-arrow-clockwise"></i> Refreshing channel list...</button>';
 				
 				$.ajax({
@@ -259,7 +259,7 @@
 					<div id="video-streams-page-container" class="container">
 						
 						<div class="row mb-3">
-							<button type="button" class="btn btn-primary" onclick="onRefreshChannelsClick();"><i class="bi bi-arrow-clockwise"></i> Refresh channel list</button>
+							<button type="button" class="btn btn-primary" onclick="onRefreshChannelsClick(this);"><i class="bi bi-arrow-clockwise"></i> Refresh channel list</button>
 						</div>
 					
 						<div class="row header-row p-2">
