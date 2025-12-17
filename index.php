@@ -5,7 +5,11 @@
 	exec("pidof omxplayer.bin", $omxplayerPids);
 	
 	if (count($vbit2Pids) == 0) $data["runningService"] = "";
-	if (count($omxplayerPids) == 0) $data["runningVideoStream"] = ""; $data["runningVideoStreamUrl"] = "";
+	if (count($omxplayerPids) == 0)
+	{
+		$data["runningVideoStream"] = ""; 
+		$data["runningVideoStreamUrl"] = "";
+	}
 	
 	exec("ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'", $hostIP);
 ?>
