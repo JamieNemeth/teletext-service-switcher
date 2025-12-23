@@ -4,5 +4,5 @@
 	exec("sudo killall pngview");
 	exec("sudo killall omxplayer.bin");
 	
-	exec('/usr/bin/omxplayer --win "-66 75 796 565" ' . urldecode($_POST["runningVideoStreamUrl"]) . ' --live --deinterlace --blank --vol 600');
+	exec('/usr/bin/omxplayer --win "-66 75 796 565" ' . urldecode($_POST["runningVideoStreamUrl"]) . ' --deinterlace --blank --vol 600');
 ?>
