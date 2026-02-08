@@ -21,7 +21,7 @@ sudo apt-get install apache2 php acl -y
 ```
 
 #### Repoint to legacy sources
-If the previous step results in an error similar to: `The repository 'http://raspbian.raspberrypi.org/raspbian buster Release' no longer has a Release file.`, then edit your sources file:
+If the previous step results in lots of _Not Found_ or _Failed to fetch_ errors, and `sudo apt-get update` results in an error similar to: _The repository 'http://raspbian.raspberrypi.org/raspbian buster Release' no longer has a Release file_, then edit your sources file:
 ```
 sudo nano /etc/apt/sources.list
 
